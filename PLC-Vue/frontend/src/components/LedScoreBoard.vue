@@ -1,73 +1,93 @@
 <template>
-<div class="space-y-4 p-4 max-w-[1400px] mx-auto">
+  <div class="space-y-6">
     <!-- Compact Monitoring Header -->
-    <Card class="bg-white shadow-sm border-slate-200 overflow-hidden mb-4 rounded-2xl">
-      <CardContent class="p-4 bg-slate-50/50">
-        <div class="flex flex-wrap items-center gap-6">
-          <!-- Group 2: Brightness Control -->
-          <div class="flex-1 min-w-[300px] bg-white p-3 px-5 rounded-xl border border-slate-200 shadow-sm">
-            <div class="flex flex-col">
-              <div class="flex items-center justify-between mb-1.5">
-                <span class="text-[10px] uppercase font-black tracking-widest text-slate-400">Board Brightness</span>
-                <span class="text-xs font-black text-blue-600">
-                  {{ BRIGHTNESS_OPTIONS[brightness]?.label || '0%' }}
-                </span>
-              </div>
-              <div class="flex items-center gap-4 h-6">
-                <Slider
-                  :model-value="[brightness]"
-                  @update:model-value="(val) => val?.[0] !== undefined && updateBrightness(val[0])"
-                  :max="4"
-                  :step="1"
-                  class="flex-1"
-                />
-                <span class="text-[9px] font-black text-slate-300 uppercase tracking-tighter w-8">
-                  {{ brightness === 4 ? 'MAX' : 'BRT' }}
-                </span>
-              </div>
+    <!-- Compact Monitoring Header -->
+    <div
+      class="glass-card p-3 px-5 rounded-2xl border-black/10 tech-border overflow-hidden"
+    >
+      <div class="flex flex-wrap items-center gap-6">
+        <!-- Group 2: Brightness Control (Slimmer) -->
+        <div
+          class="flex-1 min-w-[200px] bg-slate-100/50 p-2 px-4 rounded-xl border border-black/10"
+        >
+          <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2 shrink-0">
+              <Sun class="h-3 w-3 text-primary" />
+              <span
+                class="text-[9px] uppercase font-bold tracking-wider text-muted-foreground whitespace-nowrap"
+                >Brightness</span
+              >
             </div>
-          </div>
-
-          <!-- Group 3: Global Actions -->
-          <div class="flex items-center gap-2">
-            <Button
-              @click="writeAndPulse"
-              :disabled="!isConnected || isLoading"
-              size="sm"
-              class="h-10 px-6 rounded-xl font-black text-xs uppercase shadow-md shadow-blue-500/10 bg-blue-600 hover:bg-blue-700 transition-all active:scale-95 text-white"
+            <Slider
+              :model-value="[brightness]"
+              @update:model-value="
+                (val) => val?.[0] !== undefined && updateBrightness(val[0])
+              "
+              :max="4"
+              :step="1"
+              class="flex-1 h-4"
+            />
+            <span
+              class="text-[10px] font-black text-primary min-w-[30px] text-right"
             >
-              <span v-if="isLoading" class="flex items-center gap-2">
-                <div class="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                Wait
-              </span>
-              <span v-else>Update Board</span>
-            </Button>
-            <Button
-              @click="handleReset"
-              :disabled="!isConnected || isLoading"
-              variant="outline"
-              size="sm"
-              class="h-10 px-4 rounded-xl text-[10px] font-black uppercase text-slate-400 border-slate-200 bg-white hover:bg-red-50 hover:text-red-600 hover:border-red-200"
-            >
-              Reset
-            </Button>
+              {{ BRIGHTNESS_OPTIONS[brightness]?.label || "0%" }}
+            </span>
           </div>
         </div>
-      </CardContent>
-    </Card>
+
+        <!-- Group 3: Global Actions (Slimmer) -->
+        <div class="flex items-center gap-3">
+          <button
+            @click="writeAndPulse"
+            :disabled="!isConnected || isLoading"
+            class="h-9 px-6 rounded-xl font-black text-[10px] uppercase tracking-wider bg-primary hover:bg-primary/90 text-primary-foreground border border-black/10 transition-all active:scale-95 flex items-center gap-2"
+          >
+            <RefreshCcw v-if="isLoading" class="h-3 w-3 animate-spin" />
+            <Activity v-else class="h-3 w-3" />
+            <span>{{ isLoading ? "Syncing..." : "Update" }}</span>
+          </button>
+          <Button
+            @click="handleReset"
+            :disabled="!isConnected || isLoading"
+            variant="ghost"
+            size="sm"
+            class="h-9 px-3 rounded-xl text-[9px] font-bold uppercase tracking-wider text-muted-foreground hover:bg-red-50 hover:text-red-600 border border-transparent hover:border-red-200"
+          >
+            <RotateCcw class="h-3 w-3 mr-1" />
+            Reset
+          </Button>
+        </div>
+      </div>
+    </div>
 
     <!-- Alerts (Bottom Toast) -->
-    <div v-if="error || successMessage" class="fixed bottom-4 right-4 z-[100] w-72 animate-in slide-in-from-right duration-300">
-      <Alert v-if="error" variant="destructive" class="shadow-xl py-2 px-3 border-none bg-destructive text-destructive-foreground">
-        <AlertDescription class="text-[10px] font-bold">{{ error }}</AlertDescription>
+    <div
+      v-if="error || successMessage"
+      class="fixed bottom-6 right-6 z-[100] w-80 animate-in slide-in-from-right duration-500"
+    >
+      <Alert
+        v-if="error"
+        variant="destructive"
+        class="glass-card border-red-500/20 bg-red-50/90 text-red-600 backdrop-blur-2xl"
+      >
+        <WifiOff class="h-4 w-4" />
+        <AlertDescription class="text-xs font-bold leading-tight">{{
+          error
+        }}</AlertDescription>
       </Alert>
-      <Alert v-if="successMessage" class="bg-primary border-none text-primary-foreground shadow-xl py-2 px-3">
-        <AlertDescription class="text-[10px] font-bold">{{ successMessage }}</AlertDescription>
+      <Alert
+        v-if="successMessage"
+        class="glass-card border-green-500/20 bg-green-50/90 text-green-600 backdrop-blur-2xl"
+      >
+        <Wifi class="h-4 w-4" />
+        <AlertDescription class="text-xs font-bold leading-tight">{{
+          successMessage
+        }}</AlertDescription>
       </Alert>
     </div>
 
     <!-- Pools Grid -->
-    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-1.5">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
       <PoolCard
         v-for="(pool, index) in pools"
         :key="index"
@@ -83,19 +103,27 @@
 </template>
 
 <script setup lang="ts">
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Slider } from '@/components/ui/slider';
-import { useDb54 } from '@/composables/useDb54';
-import { ref } from 'vue';
-import PoolCard from './PoolCard.vue';
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Slider } from "@/components/ui/slider";
+import { useDb54 } from "@/composables/useDb54";
+import {
+  Activity,
+  RefreshCcw,
+  RotateCcw,
+  Sun,
+  Wifi,
+  WifiOff,
+} from "lucide-vue-next";
+import { ref, watch } from "vue";
+import PoolCard from "./PoolCard.vue";
 
 const props = defineProps<{
   independent?: boolean;
 }>();
 
-const ledIpAddress = ref('192.168.190.53');
+const ledIpAddress = ref("192.168.190.53");
 
 const {
   isConnected,
@@ -115,13 +143,15 @@ const {
   BRIGHTNESS_OPTIONS,
 } = useDb54();
 
-import { watch } from 'vue';
-
-watch(isSocketConnected, (connected) => {
-  if (connected && !isConnected.value && props.independent) {
-    handleConnect();
-  }
-}, { immediate: true });
+watch(
+  isSocketConnected,
+  (connected) => {
+    if (connected && !isConnected.value && props.independent) {
+      handleConnect();
+    }
+  },
+  { immediate: true },
+);
 
 const handleConnect = () => {
   if (props.independent) {
@@ -130,7 +160,7 @@ const handleConnect = () => {
 };
 
 const handleReset = () => {
-  if (confirm('คุณต้องการรีเซ็ตค่าทั้งหมดหรือไม่?')) {
+  if (confirm("คุณต้องการรีเซ็ตค่าทั้งหมดหรือไม่?")) {
     resetAll();
   }
 };
